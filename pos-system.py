@@ -31,6 +31,36 @@ class Order:
             
             print("商品コード：{} 商品名：{} 価格：{}  ×　{}個".format(item_code, name, price, item_qty))
 
+    def calc_order_ttl(self):
+        ttl = 0
+        
+        for item in self.item_order_list:
+            item_code = item.split()[0]
+            item_qty = int(item.split()[1])
+            price = self.item_master[int(item_code)-1].get_price()
+            sub_ttl = item_qty * price
+            ttl = ttl + sub_ttl
+        
+        print('合計金額は{:,}円になります。'.format(ttl)) 
+        return ttl
+
+    def calc_payment(self, ttl):
+        payment = ''
+        
+        while payment != 'done':
+            print('受け取った代金を入力してください。')
+            money = int(input())
+
+            if money == ttl:
+                print('ありがとうございました。ちょうどお預かりします。')
+                payment = 'done'
+            elif money > ttl:
+                exchange = money - ttl
+                print('ありがとうございました。{:,}円のお返しです。'.format(exchange))
+                payment = 'done'
+            else:
+                print('お代が足りません。')
+
 ###メイン処理
 def main():
     # マスタ登録
@@ -55,12 +85,20 @@ def main():
         add_item = input()
         
         if add_item != "yes":
-            order.add_item_order(add_item)
+            print('オーダーの個数を入力してください。')
+            add_qty = input()
+            order.add_item_order('{} {}'.format(add_item, add_qty))
         else:
             order_end = "yes"
 
     #オーダー表示
     order.view_item_list()
+
+    #合計金額を表示
+    ttl = order.calc_order_ttl()
+
+    #代金の授受、お釣りを伝える
+    order.calc_payment(ttl)
 
 if __name__ == "__main__":
     main()
