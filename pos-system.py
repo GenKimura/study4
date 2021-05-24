@@ -1,3 +1,4 @@
+import datetime
 import pandas as pd
 
 ###　商品クラス
@@ -63,16 +64,40 @@ class Order:
         while payment != 'done':
             print('受け取った代金を入力してください。')
             money = int(input())
+            exchange = money - ttl
 
             if money == ttl:
                 print('ありがとうございました。ちょうどお預かりします。')
                 payment = 'done'
             elif money > ttl:
-                exchange = money - ttl
                 print('ありがとうございました。{:,}円のお返しです。'.format(exchange))
                 payment = 'done'
             else:
                 print('お代が足りません。')
+            return money, exchange
+
+    def receipt(self, master, money, exchange):
+    # レシートを出力
+        with open('receipt.txt', 'w', encoding='UTF-8') as f:
+            #日付
+            dt_now = datetime.datetime.now()
+            f.write(dt_now.strftime('%Y年%m月%d日 %H:%M:%S'))
+            
+            #オーダー一覧を書き出し                         
+            f.write('\n■オーダー一覧' )
+            summary = self.order_list().groupby('code')
+            for code, group in summary:
+                name = master.loc[code]['商品名']
+                price = master.loc[code]['価格']
+                f.write('\n{}({:,}円): {:,}個'.format(name, price, group.sum()['qty']))
+            
+            #お預かり金額を書き出し
+            
+            f.write('\n■お預かり金額:{:,}円'.format(money))
+
+            #お釣りを書き出し
+            f.write('\n■お釣り:{:,}円'.format(max(exchange, 0)))
+            f.write('\nありがとうございました。')
 
 ###メイン処理
 def main():
@@ -116,7 +141,10 @@ def main():
     ttl = order.calc_order_ttl(master, order_summary)
 
     #代金の授受、お釣りを伝える
-    order.calc_payment(ttl)
+    money, exchange = order.calc_payment(ttl)
+
+    #レシートを出力
+    order.receipt(master, money, exchange)
 
 if __name__ == "__main__":
     main()
