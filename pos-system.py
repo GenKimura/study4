@@ -53,7 +53,7 @@ class Order:
         ttl = 0
         for code, group in order_summary:
             price = master.loc[code]['価格']
-            ttl = group.sum()['qty'] * price
+            ttl = ttl + group.sum()['qty'] * price
         print('合計金額は{:,}円になります。'.format(ttl)) 
         return ttl
 
