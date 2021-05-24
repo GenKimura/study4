@@ -33,10 +33,10 @@ class Order:
     # オーダーの一覧を表示
         lists = self.order_list()
         for i in lists.index:
-            code = df2.iloc[i]['code']
+            code = lists.iloc[i]['code']
             name = master.loc[code]['商品名']
             price = master.loc[code]['価格']
-            qty = df2.iloc[i]['qty']
+            qty = lists.iloc[i]['qty']
             print('商品コード：{} 商品名：{} 価格：{:,}円  ×　{}個'.format(code, name, price, qty))
 
     def view_order_summary(self, master):
