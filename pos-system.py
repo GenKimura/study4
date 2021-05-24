@@ -22,28 +22,32 @@ class Order:
     def add_item_order(self, item_ordered):
         self.item_order_list.append(item_ordered)
     
-    def view_item_list(self):
-        # オーダーの一覧を表示
-        for item in self.item_order_list:
-            item_code = item.split()[0]
-            item_qty = item.split()[1]
-            name = self.item_master[int(item_code)-1].get_name()
-            price = self.item_master[int(item_code)-1].get_price()
-            
-            print("商品コード：{} 商品名：{} 価格：{}  ×　{}個".format(item_code, name, price, item_qty))
+    def order_list(self):
+    #オーダーリストをDFに格納
+        df = pd.DataFrame()
+        df['code'] = [item.split()[0] for item in self.item_order_list]
+        df['qty'] = [int(item.split()[1]) for item in self.item_order_list]
+        return df
+
+    def view_item_list(self, master):
+    # オーダーの一覧を表示
+        lists = self.order_list()
+        for i in lists.index:
+            code = df2.iloc[i]['code']
+            name = master.loc[code]['商品名']
+            price = master.loc[code]['価格']
+            qty = df2.iloc[i]['qty']
+            print('商品コード：{} 商品名：{} 価格：{:,}円  ×　{}個'.format(code, name, price, qty))
 
     def view_order_summary(self, master):
-        # 商品コードごとのコード、名前、個数を表示
-        _df = pd.DataFrame()
-        _df['code'] = [item.split()[0] for item in self.item_order_list]
-        _df['qty'] = [int(item.split()[1]) for item in self.item_order_list]
-        df = _df.groupby('code')
-        
-        for code, group in df:
+    #オーダー一覧をグループ化して表示
+        summary = self.order_list().groupby('code')
+        for code, group in summary:
             name = master.loc[code]['商品名']
-            print('{}: {}個'.format(name, group.sum()['qty']))
+            price = master.loc[code]['価格']
+            print('{}({:,}円): {:,}個'.format(name, price, group.sum()['qty']))
             
-        return df
+        return summary
 
     def calc_order_ttl(self, master, order_summary):
         ttl = 0
@@ -102,7 +106,7 @@ def main():
 
     #オーダー表示
     print("■オーダー一覧")
-    order.view_item_list()
+    order.view_item_list(master)
 
     #オーダーサマリー
     print("■オーダーサマリー")
